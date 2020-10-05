@@ -1,0 +1,334 @@
+Laboratório de Medição e Experimentação de Software
+Aluno: Cristiano Coelho
+
+Estrutura do arquivo:
+    1. Scripts Python
+    2. Top 100 Java
+    3. Top 100 Python
+
+#####################################################################
+#####################################################################
+#####################################################################
+
+1. Script Python
+
+    import time
+    import requests
+    from datetime import datetime    
+    from json import dump
+    from json import loads
+
+    queries = ["""
+    query Sprint1 {
+        search(query: "stars:>10000 language:{LANG}", type: REPOSITORY, first: 100, {AFTER}) {
+            pageInfo {
+                    hasNextPage
+                    endCursor
+            }
+            nodes {
+                ... on Repository {
+                    nameWithOwner
+                    stargazers {
+                        totalCount
+                    }
+                    languages(orderBy: {field: SIZE, direction: DESC}, first: 1) {
+                        edges {
+                            node {
+                                name
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    """]
+
+
+def fetch(query, json, headers):
+    request = requests.post(
+        'https://api.github.com/graphql', json=json, headers=headers)
+    if request.status_code == 200:
+        return request.json()
+
+    time.sleep(1)
+
+    return fetch(query, json, headers)
+
+
+def run(query, language, page_limit=10):
+    token = ''  # INSERT TOKEN
+    headers = {"Authorization": "Bearer " + token}
+    query_language = query.replace("{LANG}", language)
+    final_query = query_language.replace("{AFTER}", "")
+    json = {"query": final_query, "variables": {}}
+
+    total_pages = 1
+
+    result = fetch(query, json, headers)
+
+    nodes = result['data']['search']['nodes']
+    next_page = result["data"]["search"]["pageInfo"]["hasNextPage"]
+
+    while (next_page and total_pages < page_limit):
+        total_pages += 1
+        cursor = result["data"]["search"]["pageInfo"]["endCursor"]
+        next_query = query
+        json["query"] = next_query.replace(
+            "{AFTER}", ", after: \"%s\"" % cursor)
+        result = fetch(query, json, headers)
+        nodes += result['data']['search']['nodes']
+        next_page = result["data"]["search"]["pageInfo"]["hasNextPage"]
+
+    return nodes
+
+
+def QueryTop100(language_name):
+    try:
+        query = queries[0]
+
+        nodes = run(query, language_name, 1)
+
+        filename = "Top100" + language_name + ".csv"
+
+        with open(filename, 'a') as the_file:
+            the_file.write('nameWithOwner;stargazers;mostUsedLanguage\n')
+
+        for node in nodes:
+            if (len(node['languages']['edges']) > 0):
+                top_language = node['languages']['edges'][0]['node']['name']
+            else:
+                top_language = "NA"
+
+            with open(filename, 'a') as the_file:
+                the_file.write("%s;%s;%s\n" % (
+                    node['nameWithOwner'], node['stargazers']['totalCount'], top_language))
+    except Exception as ex:
+        print(ex)
+        pass
+
+
+QueryTop100("Java")
+QueryTop100("Python")
+
+
+#####################################################################
+#####################################################################
+#####################################################################
+
+
+2. Top 100 Java
+
+
+nameWithOwner;stargazers;mostUsedLanguage
+CyC2018/CS-Notes;112056;Java
+Snailclimb/JavaGuide;89026;Java
+iluwatar/java-design-patterns;60966;Java
+MisterBooo/LeetCodeAnimation;59650;Java
+elastic/elasticsearch;51502;Java
+spring-projects/spring-boot;50931;Java
+kdn251/interviews;48081;Java
+doocs/advanced-java;47668;Java
+ReactiveX/RxJava;43545;Java
+macrozheng/mall;41724;Java
+spring-projects/spring-framework;39556;Java
+google/guava;38949;Java
+square/okhttp;38373;Java
+square/retrofit;36669;Java
+apache/dubbo;33710;Java
+PhilJay/MPAndroidChart;31830;Java
+TheAlgorithms/Java;30453;Java
+bumptech/glide;29983;Java
+airbnb/lottie-android;29787;Java
+Blankj/AndroidUtilCode;27984;Java
+zxing/zxing;26307;Java
+proxyee-down-org/proxyee-down;25555;Java
+JakeWharton/butterknife;25467;Java
+crossoverJie/JCSprout;25286;Java
+kon9chunkit/GitHub-Chinese-Top-Charts;25244;Java
+netty/netty;24867;Java
+ityouknow/spring-boot-examples;23742;Java
+skylot/jadx;23527;Java
+alibaba/arthas;23182;Java
+eugenp/tutorials;23086;Java
+greenrobot/EventBus;22874;Java
+alibaba/fastjson;22448;Java
+ctripcorp/apollo;22431;Java
+NationalSecurityAgency/ghidra;22396;Java
+alibaba/druid;22320;Java
+scwang90/SmartRefreshLayout;21538;Java
+CymChad/BaseRecyclerViewAdapterHelper;20819;Java
+Netflix/Hystrix;20372;Java
+ReactiveX/RxAndroid;19151;Java
+geekxh/hello-algorithm;19147;Java
+SeleniumHQ/selenium;18764;Java
+lenve/vhr;18742;Java
+google/gson;18603;Java
+xkcoding/spring-boot-demo;18075;Java
+square/picasso;17669;Java
+libgdx/libgdx;17476;Java
+seata/seata;17415;Java
+hollischuang/toBeTopJavaer;17249;Java
+chrisbanes/PhotoView;17183;Java
+alibaba/easyexcel;17123;Java
+apache/kafka;17008;Java
+qiurunze123/miaosha;16974;Java
+wuyouzhuguli/SpringAll;16884;Java
+halo-dev/halo;16826;Java
+nostra13/Android-Universal-Image-Loader;16750;Java
+google/ExoPlayer;16422;Java
+facebook/fresco;16333;Java
+jenkinsci/jenkins;16235;Java
+alibaba/canal;15888;Java
+looly/hutool;15826;Java
+alibaba/spring-cloud-alibaba;15808;Java
+xuxueli/xxl-job;15766;Java
+shuzheng/zheng;15622;Java
+didi/DoraemonKit;15615;Java
+zhangdaiscott/jeecg-boot;15547;Java
+bazelbuild/bazel;15451;Java
+dbeaver/dbeaver;15384;Java
+Tencent/tinker;15356;Java
+CarGuo/GSYVideoPlayer;14939;Java
+apache/skywalking;14771;Java
+android10/Android-CleanArchitecture;14509;Java
+redisson/redisson;14466;Java
+alibaba/nacos;14370;Java
+mybatis/mybatis-3;14340;Java
+linlinjava/litemall;14326;Java
+dianping/cat;14318;Java
+apache/flink;14276;Java
+forezp/SpringCloudLearning;14248;Java
+winterbe/java8-tutorial;13922;Java
+alibaba/Sentinel;13888;Java
+brettwooldridge/HikariCP;13821;Java
+signalapp/Signal-Android;13802;Java
+oracle/graal;13666;Java
+EnterpriseQualityCoding/FizzBuzzEnterpriseEdition;13565;Java
+JeffLi1993/springboot-learning-example;13547;Java
+openzipkin/zipkin;13465;Java
+hdodenhof/CircleImageView;13439;Java
+lgvalle/Material-Animations;13434;Java
+react-native-community/lottie-react-native;13412;Java
+LMAX-Exchange/disruptor;13021;Java
+orhanobut/logger;12478;Java
+alibaba/ARouter;12422;Java
+apache/rocketmq;12389;Java
+Tencent/QMUI_Android;12243;Java
+greenrobot/greenDAO;12215;Java
+apache/shardingsphere;12160;Java
+Bigkoo/Android-PickerView;12144;Java
+dyc87112/SpringBoot-Learning;12132;Java
+facebook/stetho;12053;Java
+Curzibn/Luban;12032;Java
+
+
+#####################################################################
+#####################################################################
+#####################################################################
+
+
+3. Top 100 Python
+
+
+nameWithOwner;stargazers;mostUsedLanguage
+donnemartin/system-design-primer;108541;Python
+public-apis/public-apis;97463;Python
+jackfrued/Python-100-Days;93411;Python
+vinta/awesome-python;87331;Python
+TheAlgorithms/Python;86913;Python
+ytdl-org/youtube-dl;71569;Python
+tensorflow/models;66503;Python
+nvbn/thefuck;55844;Python
+django/django;52631;Python
+pallets/flask;52268;Python
+keras-team/keras;49900;Python
+httpie/httpie;48279;Python
+josephmisiti/awesome-machine-learning;46860;Python
+ansible/ansible;44992;Python
+psf/requests;43622;Python
+scikit-learn/scikit-learn;42504;Python
+scrapy/scrapy;38457;Python
+minimaxir/big-list-of-naughty-strings;38016;Python
+ageitgey/face_recognition;36504;Python
+home-assistant/core;36015;Python
+soimort/you-get;35179;Python
+huggingface/transformers;34581;Python
+521xueweihan/HelloGitHub;33865;Python
+python/cpython;33815;Python
+shadowsocks/shadowsocks;32793;Python
+deepfakes/faceswap;32572;Python
+XX-net/XX-Net;30367;Python
+apache/incubator-superset;30315;Python
+0voice/interview_internal_reference;29008;Python
+testerSunshine/12306;28756;Python
+isocpp/CppCoreGuidelines;28719;Python
+floodsung/Deep-Learning-Papers-Reading-Roadmap;28420;Python
+certbot/certbot;27233;Python
+apachecn/AiLearning;27198;Python
+pandas-dev/pandas;26766;Python
+localstack/localstack;26661;Python
+getsentry/sentry;26200;Python
+faif/python-patterns;25990;Python
+3b1b/manim;25742;Python
+google-research/bert;25099;Python
+fighting41love/funNLP;24921;Python
+fxsjy/jieba;24254;Python
+facebookresearch/Detectron;23715;Python
+openai/gym;22285;Python
+ycm-core/YouCompleteMe;21909;Python
+0xAX/linux-insides;21805;Python
+satwikkansal/wtfpython;21656;Python
+tiangolo/fastapi;21620;Python
+pypa/pipenv;21022;Python
+donnemartin/interactive-coding-challenges;20922;Python
+littlecodersh/ItChat;20860;Python
+hankcs/HanLP;20858;Python
+docker/compose;20815;Python
+iperov/DeepFaceLab;20089;Python
+mitmproxy/mitmproxy;20072;Python
+CorentinJ/Real-Time-Voice-Cloning;19669;Python
+donnemartin/data-science-ipython-notebooks;19577;Python
+tornadoweb/tornado;19454;Python
+chubin/cheat.sh;19397;Python
+trailofbits/algo;19322;Python
+geekcomputers/Python;18937;Python
+encode/django-rest-framework;18919;Python
+d2l-ai/d2l-zh;18819;Python
+matterport/Mask_RCNN;18485;Python
+apache/airflow;18446;Python
+sqlmapproject/sqlmap;18289;Python
+yunjey/pytorch-tutorial;18232;Python
+swisskyrepo/PayloadsAllTheThings;18198;Python
+psf/black;18066;Python
+keon/algorithms;17941;Python
+google/python-fire;17778;Python
+explosion/spaCy;17306;Python
+drduh/macOS-Security-and-Privacy-Guide;17283;Python
+nicolargo/glances;16908;Python
+eriklindernoren/ML-From-Scratch;16859;Python
+sebastianruder/NLP-progress;16840;Python
+wangzheng0822/algo;16637;Python
+StevenBlack/hosts;16169;Python
+tqdm/tqdm;15988;Python
+celery/celery;15897;Python
+magenta/magenta;15718;Python
+gto76/python-cheatsheet;15526;Python
+reddit-archive/reddit;15486;Python
+numpy/numpy;15041;Python
+sherlock-project/sherlock;14964;Python
+instillai/TensorFlow-Course;14932;Python
+charlax/professional-programming;14628;Python
+binux/pyspider;14610;Python
+ipython/ipython;14404;Python
+luong-komorebi/Awesome-Linux-Software;14277;Python
+deezer/spleeter;14260;Python
+toml-lang/toml;14259;Python
+pytorch/examples;14247;Python
+huge-success/sanic;14149;Python
+bitcoinbook/bitcoinbook;14046;Python
+bokeh/bokeh;14041;Python
+locustio/locust;13925;Python
+wangshub/wechat_jump_game;13894;Python
+nginx-proxy/nginx-proxy;13806;Python
+cool-RR/PySnooper;13794;Python

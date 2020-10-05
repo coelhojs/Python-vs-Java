@@ -48,7 +48,7 @@ def QueryTop100(language_name):
     try:
         query = queries[0]
 
-        nodes = run(query, language_name)
+        nodes = run(query, language_name, 1)
 
         filename = "Top100" + language_name + ".csv"
 
